@@ -1,6 +1,6 @@
-# Curvidar
+# CurvidarTUI
 A simple one-command script to set up Termux for easy YouTube video/audio downloads via the share menu.
-# Curvidar: Termux YouTube Downloader 
+# CurvidarTUI: Termux YouTube Downloader 
 
 <p align="center">
   <img src="assets/image/logo.png" alt="Curtroder Logo" width="300"/>
@@ -41,7 +41,7 @@ pkg install git -y
 
 📌 Step 3: Clone the Curvidar Repository
 ```bash
-git clone https://github.com/currentvai/Curvidar.git
+git clone https://github.com/MrAdielG/CurvidarTui.git
 ```
 
 ✅ Downloads the Curvidar project from GitHub.
@@ -80,20 +80,11 @@ chmod +x bin/termux-url-opener
 
 If you want to run everything at once, just use this:
 ```bash
-pkg update -y && pkg upgrade -y && pkg install git -y && git clone https://github.com/currentvai/Curvidar.git && cd Curvidar && chmod +x setup.sh && ./setup.sh
+pkg update -y && pkg upgrade -y && pkg install git -y && git clone https://github.com/MrAdielG/CurvidarTUI.git && cd CurvidarTUI && chmod +x setup.sh && ./setup.sh
 ```
 ✅ After Successful Installation
 You’re all set! 
 
----
-🔄 One-Click Update Command
-
-To update the Curvidar tool to the latest version, just run the following command in Termux or Linux:
-
-```bash
-cd $HOME/Curvidar && git pull && chmod +x *.sh && echo "✅ Curvidar Update!"
-```
----
 
 Now you can **download any video easily** in just a few steps.
 
