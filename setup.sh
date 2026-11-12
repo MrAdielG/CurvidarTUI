@@ -92,8 +92,9 @@ install_pkgs() {
         pkg install $pkg -y
     done
     
-    echo "Installing/Updating yt-dlp..."
+    echo "Installing/Updating yt-dlp and textualize..."
     pip install --upgrade yt-dlp
+    pip install textual
 }
 
 # Function to setup termux-url-opener
