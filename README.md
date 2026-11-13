@@ -10,6 +10,7 @@ A simple one-command script to set up Termux for easy YouTube video/audio downlo
 ![Works On](https://img.shields.io/badge/works%20on-Termux-green)
 [![Author](https://img.shields.io/badge/Author-Current%20Vai%20%E2%99%9A-blue)](https://github.com/currentvai)
 
+All credits go to https://github.com/currentvai !
 **Curvidar** is a one-command script to set up your Termux for downloading YouTube videos and audio with an interactive menu, just by sharing a link.
 
 This script installs all necessary tools like `yt-dlp`, `ffmpeg`, and `aria2c`, and then configures the `termux-url-opener` for a seamless experience.
