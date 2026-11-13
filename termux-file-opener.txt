@@ -3,11 +3,13 @@ from babel.dates import format_date, format_time
 from textual.app import App
 from textual.widgets import Button, ProgressBar, Static, Label
 from textual.containers import Center
+from textual.color import Gradient
+from textual import work
 from datetime import datetime as dt
 from art import *
 from pathlib import Path
 import sys
-import os
+import re
 import subprocess
 import asyncio
 from asyncio import sleep
@@ -99,6 +101,20 @@ class ShowMenu(App):
     }
     """
     def compose(self):
+        gradient = Gradient.from_colors(
+            "#881177",
+            "#aa3355",
+            "#cc6666",
+            "#ee9944",
+            "#eedd00",
+            "#99dd55",
+            "#44dd88",
+            "#22ccbb",
+            "#00bbcc",
+            "#0099cc",
+            "#3366bb",
+            "#663399",
+        )
         yield Banner()
         yield Label("[cyan]--- Curvidar: YouTube Downloader ---")
         yield Label(f"[yellow]URL: [not bold]{url}")
@@ -109,14 +125,20 @@ class ShowMenu(App):
         yield Button("[bold]Baixar Apenas Audio (mp3 - compatibilidade)", classes='audio', id='audiomp3')
         yield Button("[bold]SAIR", id='sair')
         with Center():
+            yield ProgressBar(total=100, id="progresso", show_eta=False, gradient=gradient, show_percentage=True)
             yield Static("Aguardando download...", id="status")
 
     def on_mount(self):
+        self.download_worker = None
+        self.processo = None
         self.query_one(Center).display = False
     
 
     async def download(self, choice):
+        barra = self.query_one("#progresso", ProgressBar)
+        barra.styles.padding = (0, 0, 0, 2)
         status = self.query_one("#status", Static)
+        status.styles.padding = (0, 0, 0, 2)
 
         formatos = {
             "video1080": ["-f", "bestvideo[height<=1080]+bestaudio/best"],
@@ -129,57 +151,108 @@ class ShowMenu(App):
         argumentos = [
             "yt-dlp",
             "--restrict-filenames",
-            "--newline",
-            "--progress-template",
-            "download:%(progress.percent)s|%(progress._speed_str)s|%(progress._eta_str)s",
+            "--downloader", "aria2c",
+            "--downloader-args", "aria2c:-x 16 -k 1M",
             *formatos[choice],
             "-o", output_template,
             url
         ]
-
-        status.display = True
+        barra.update(progress=0)
         status.update("Iniciando download...")
 
         try:
-            processo = await asyncio.create_subprocess_exec(
+            self.processo = await asyncio.create_subprocess_exec(
                 *argumentos,
                 cwd=ytdir,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT
             )
-
+            buffer = ""
+            
             while True:
-                linha = await processo.stdout.readline()
-
-                if not linha:
+                
+                bloco = await self.processo.stdout.read(1024)
+                
+                if not bloco:
+                    
                     break
 
-                texto = linha.decode(errors="replace").strip()
-                status.update(texto)
+                buffer += bloco.decode(errors="replace")
 
-            codigo = await processo.wait()
+                # aria2c atualiza usando \r, não apenas \n
+                partes = re.split(r"[\r\n]+", buffer)
+
+                buffer = partes.pop()
+
+                for texto in partes:
+                    resultado = re.search(
+                        r"\(([\d.]+)%\).*?DL:([\d.]+)([KMGT]?i?B).*?ETA:([\w:-]+)",
+                        texto
+                    )
+
+                    if not resultado:
+                        status.update("Baixando...")
+                        barra.advance(1)
+                        continue
+
+                    porcentagem = resultado.groups()[0]
+
+                    progresso = float(porcentagem)
+
+                    diferenca = int(progresso) - int(barra.progress)
+
+                    if diferenca > 0:
+                        for _ in range(diferenca):
+                            barra.advance(1)
+                            await sleep(0.01)
+
+            codigo = await self.processo.wait()
 
             if codigo == 0:
+                diferenca = 100-int(barra.progress)
+                if diferenca > 0:
+                    for _ in range(diferenca):
+                        barra.advance(1)
+                        await sleep(0.01)
+                barra.update(progress=100)
                 status.update("[green]Download concluído!\nVerifique a pasta Youtube.[/green]")
-                sleep(5)
                 self.exit()
             else:
                 status.update(f"[red]Erro no download: {codigo}[/red]")
+        except asyncio.CancelledError:
 
+            if self.processo and self.processo.returncode is None:
+                self.processo.terminate()
+                await self.processo.wait()
+
+            raise
         except Exception as erro:
             status.update(f"[red]Erro: {erro}[/red]")
+        finally:
+            self.processo = None
 
     # # Process the user's choice
-    async def on_button_pressed(self, event: Button.Pressed):
+    def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "sair":
-            ## TODO: chamar intent do youtube
+            if self.processo and self.processo.returncode is None:
+                self.processo.terminate()
+
+            if self.download_worker and self.download_worker.is_running:
+                self.download_worker.cancel()
             self.exit()
             return
-        else:
-            self.query_one(Center).display = True
-            os.chdir(ytdir)
-            await self.download(choice=event.button.id)
-            
+        
+        if self.download_worker and self.download_worker.is_running:
+            return
+
+        self.query_one(Center).display = True
+
+        self.download_worker = self.run_worker(
+            self.download(event.button.id),
+            exclusive=True,
+            group="download"
+        )
+                
             
 
 
