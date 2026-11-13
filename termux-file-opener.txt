@@ -4,12 +4,13 @@ from textual.app import App
 from textual.widgets import Button, ProgressBar, Static, Label
 from textual.containers import Center
 from datetime import datetime as dt
+from art import *
 from pathlib import Path
 import sys
 import os
+import subprocess
 import asyncio
 from asyncio import sleep
-
 # # --- Script Configuration ---
 # # YouTube URL from the share menu
 url=sys.argv[1]
@@ -28,14 +29,14 @@ Path(ytdir).mkdir(exist_ok=True)
 # # This banner will be shown every time the screen is cleared.
 # # Este banner será mostrado toda vez que a tela for limpa
 class Banner(Static):
-
+    DEFAULT_CSS = """
+    Banner {
+        color: cyan;
+        text-style: bold;
+    }
+    """
     def render(self):
-        return """
- ██████ ██    ██ ██████  ██    ██ ██ ██████   █████  ██████  
-██      ██    ██ ██   ██ ██    ██ ██ ██   ██ ██   ██ ██   ██ 
-██      ██    ██ ██████  ██    ██ ██ ██   ██ ███████ ██████  
-██      ██    ██ ██   ██  ██  ██  ██ ██   ██ ██   ██ ██   ██ 
- ██████  ██████  ██   ██   ████   ██ ██████  ██   ██ ██   ██ TUI\n""" + f"""
+        return text2art("CURVIDAR", font='tarty1') + text2art('tui', font='high_above') + f"""
 [rgb(106, 50, 255)]Developed By Current Vai ♚ | Curvidar v1.1
 Editado por Adiel [/]
 [yellow]© Copyright {dt.today().year} — All Rights Reserved.[/]\n
@@ -44,17 +45,69 @@ Editado por Adiel [/]
 
 # # --- Main Menu Function ---
 class ShowMenu(App):
-    CSS_PATH = "termux-file-opener.tcss"
+    CSS = """
+    ShowMenu {
+        Button {
+            width: 1fr;
+            height: 1fr;
+            text-style: bold;
+        }
+
+        .video {
+            color: green;
+            background: transparent;
+        }
+
+        #video1080, #video720, #video480 {
+            background: $surface;
+            margin-bottom: 1;
+            border: tall 60%;
+        }
+
+        .audio {
+            color: rgb(106, 50, 255);
+            border: round rgb(106, 50, 255);
+            background: transparent;
+        }
+
+        #audiom4a, #audiomp3 {
+            background: $surface;
+            margin-bottom: 1;
+            border: tall rgb(106, 50, 255);
+        }
+
+        #sair {
+            background: $surface;
+            color: red;
+            border: tall red;
+        }
+
+
+        Screen {
+            align: center middle;
+
+            Center {
+                layer: above;
+                width: 80%;
+                height: 65%;
+                content-align: center middle;
+                align: center middle;
+                border: tall blue;
+                offset-y: 4;
+            }
+        }
+    }
+    """
     def compose(self):
         yield Banner()
-        yield Label("--- Curvidar: YouTube Downloader ---")
+        yield Label("[cyan]--- Curvidar: YouTube Downloader ---")
         yield Label(f"[yellow]URL: [not bold]{url}")
-        yield Button("Baixar Video - 1080p (Qualidade Alta)", classes='video', id='video1080')
-        yield Button("Baixar Video - 720p (Qualidade Média)", classes='video', id='video720')
-        yield Button("Baixar Video - 480p (Qualidade Padrão)", classes='video', id='video480')
-        yield Button("Baixar Apenas Audio (m4a - qualidade)", classes='audio', id='audiom4a')
-        yield Button("Baixar Apenas Audio (mp3 - compatibilidade)", classes='audio', id='audiomp3')
-        yield Button("SAIR", id='sair')
+        yield Button("[bold]Baixar Video - 1080p (Qualidade Alta)", classes='video', id='video1080')
+        yield Button("[bold]Baixar Video - 720p (Qualidade Média)", classes='video', id='video720')
+        yield Button("[bold]Baixar Video - 480p (Qualidade Padrão)", classes='video', id='video480')
+        yield Button("[bold]Baixar Apenas Audio (m4a - qualidade)", classes='audio', id='audiom4a')
+        yield Button("[bold]Baixar Apenas Audio (mp3 - compatibilidade)", classes='audio', id='audiomp3')
+        yield Button("[bold]SAIR", id='sair')
         with Center():
             yield Static("Aguardando download...", id="status")
 
@@ -127,4 +180,9 @@ class ShowMenu(App):
             os.chdir(ytdir)
             await self.download(choice=event.button.id)
             
+            
+
+
 ShowMenu().run()
+
+
