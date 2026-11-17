@@ -94,8 +94,9 @@ install_pkgs() {
     
     echo "Installing/Updating yt-dlp and textualize..."
     pip install --upgrade yt-dlp
-    pip install textual
-    pip install art
+    pip install --upgrade textual
+    pip install --upgrade art
+    pip install --upgrade babel
 }
 
 # Function to setup termux-url-opener
