@@ -90,7 +90,7 @@ class ShowMenu(App):
 
             Center {
                 layer: above;
-                width: 80%;
+                width: 90%;
                 height: 65%;
                 content-align: center middle;
                 align: center middle;
@@ -216,6 +216,14 @@ class ShowMenu(App):
                         await sleep(0.01)
                 barra.update(progress=100)
                 status.update("[green]Download concluído!\nVerifique a pasta Youtube.[/green]")
+                try:
+                    subprocess.Popen([
+                        "termux-notification",
+                        "--content", "Download concluído!",
+                        "--vibrate", "500,1000,200"
+                    ])
+                except:
+                    pass
                 self.exit()
             else:
                 status.update(f"[red]Erro no download: {codigo}[/red]")
