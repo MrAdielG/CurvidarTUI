@@ -42,14 +42,14 @@ pkg install git -y
 
 📌 Step 3: Clone the Curvidar Repository
 ```bash
-git clone https://github.com/MrAdielG/CurvidarTui.git
+git clone https://github.com/MrAdielG/CurvidarTUI.git
 ```
 
 ✅ Downloads the Curvidar project from GitHub.
 
 📌 Step 4: Enter the Project Directory
 ```bash
-cd Curvidar
+cd CurvidarTUI
 ```
 
 ✅ Moves into the Curvidar folder.
@@ -70,7 +70,7 @@ Now change the opener path
 ```bash
 cd ~
 mkdir -p bin
-mv Curvidar/termux-file-opener.txt bin/termux-url-opener
+mv CurvidarTUI/termux-file-opener.txt ~/bin/termux-url-opener
 chmod +x bin/termux-url-opener
 
 ```
